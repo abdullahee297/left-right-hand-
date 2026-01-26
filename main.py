@@ -26,6 +26,8 @@ HAND_CONNECTIONS = [
     (17, 18), (18, 19), (19, 20)                     # Pinky
 ]
 
+p_time = 0
+hand_label = "No Hand"
 
 
 cap = cv2.VideoCapture(0)
@@ -56,11 +58,40 @@ while True:
                 cv2.circle(img, (x, y), 6, (255, 0, 0), -1)
 
             if result.handedness:
-                for i, hand_info in enumerate(result.handedness):
-                    label = hand_info[0].category_name   # "Left" or "Right"
-                    score = hand_info[0].score
+                labels = []
+                for hand_info in result.handedness:
+                    labels.append(hand_info[0].category_name)
+                
+                if len(labels) == 2:
+                    hand_label = "Both Hands"
+                else:
+                    hand_label = labels[0]
+                    
+            print(f"Hand : {hand_label}")
 
-            print(f"Hand {i}: {label}")
+            cv2.putText(img,
+                f'Hand: {hand_label}',
+                (10, 100),
+                cv2.FONT_HERSHEY_COMPLEX,
+                1,
+                (0, 0, 0),
+                2
+                )
+
+
+    c_time = time.time()
+    fps = 1 / (c_time - p_time)
+    p_time = c_time
+    cv2.putText(img,
+                f'FPS: {int(fps)}',
+                (10, 50),
+                cv2.FONT_HERSHEY_COMPLEX,
+                1,
+                (0, 0, 0),
+                2
+                )
+
+    
                 
     
     cv2.imshow("Volume Control", img)
