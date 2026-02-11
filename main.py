@@ -47,9 +47,16 @@ while True:
         for hand in result.hand_landmarks:
             h, w, _ = img.shape
             lm_list = []
+            x_list = []
+            y_list = []
             
             for lm in hand:
                 lm_list.append((int(lm.x*w), int(lm.y*h)))
+                x_list.append(int(lm.x*w))
+                y_list.append(int(lm.y*h))
+            
+            x_min, x_max = min(x_list), max(x_list)
+            y_min, y_max = min(y_list), max(y_list)
 
             for start, end in HAND_CONNECTIONS:
                 cv2.line(img, lm_list[start], lm_list[end], (0, 255, 0), 2)
@@ -69,16 +76,42 @@ while True:
                     
             print(f"Hand : {hand_label}")
 
-            cv2.putText(img,
-                f'Hand: {hand_label}',
-                (10, 100),
-                cv2.FONT_HERSHEY_COMPLEX,
-                1,
+            cv2.rectangle(img,
+                          (x_min, y_min),
+                          (x_max, y_max),
+                          (0, 255, 0),
+                          2)
+            
+            font = cv2.FONT_HERSHEY_COMPLEX
+            font_scale = 0.8
+            thickness = 2
+            padding = 6
+
+            (tw, th), _ = cv2.getTextSize(hand_label, font, font_scale, thickness)
+
+            text_x = x_min
+            text_y = y_min - 10
+
+            # Background rectangle
+            cv2.rectangle(
+                img,
+                (text_x - padding, text_y - th - padding),
+                (text_x + tw + padding, text_y + padding),
+                (0, 255, 0),
+                cv2.FILLED
+            )
+
+            # Text on top
+            cv2.putText(
+                img,
+                hand_label,
+                (text_x, text_y),
+                font,
+                font_scale,
                 (0, 0, 0),
-                2
-                )
-
-
+                thickness
+            )
+            
     c_time = time.time()
     fps = 1 / (c_time - p_time)
     p_time = c_time
@@ -87,7 +120,7 @@ while True:
                 (10, 50),
                 cv2.FONT_HERSHEY_COMPLEX,
                 1,
-                (0, 0, 0),
+                (255, 0, 255),
                 2
                 )
 
